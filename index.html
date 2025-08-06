@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Playlist Box</title>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap"
+			rel="stylesheet" />
+		<link rel="stylesheet" href="style.css" />
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<!-- <body
+		class="h-screen w-screen bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-900 text-slate-100 flex flex-col"> -->
+	<body
+		class="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-900 text-slate-100 flex flex-col px-4 py-10">
+		<main class="flex-grow flex items-center justify-center">
+			<div
+				id="tanggal"
+				class="absolute top-4 right-6 text-slate-400 text-sm font-medium"></div>
+
+			<div
+				class="bg-slate-900/80 backdrop-blur-md shadow-[0_0_30px_#0ea5e9aa] ring-1 ring-cyan-400/10 hover:shadow-cyan-500/30 transition-all duration-300 ease-in-out text-white rounded-xl w-full max-w-2xl p-6 flex flex-col fade-in-box">
+				<div class="flex justify-between items-center mb-4">
+					<h1 class="text-2xl font-bold">Playlist Box</h1>
+					<button
+						id="add-btn"
+						class="w-12 h-12 flex items-center justify-center bg-slate-900 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="w-5 h-5"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 4v16m8-8H4" />
+						</svg>
+					</button>
+				</div>
+
+				<!-- Hidden form input -->
+				<div id="form-container" class="flex gap-2 mb-4 hidden">
+					<input
+						id="song-input"
+						type="text"
+						placeholder="Masukkan judul lagu"
+						class="flex-1 px-3 py-2 bg-slate-700 text-white rounded border border-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500" />
+				</div>
+
+				<ul id="song-list" class="space-y-2 overflow-y-auto flex-1 pr-1"></ul>
+			</div>
+		</main>
+
+		<footer
+			class="fixed bottom-0 left-0 w-full bg-slate-900 text-center text-sm text-slate-400 py-2 border-t border-slate-700 z-50">
+			&copy; 2025 Playlist Box by Nisasaf 💿
+		</footer>
+
+		<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+		<script>
+			const supabaseUrl = "https://pmhfwdueyudmccpdndnl.supabase.co";
+			const supabaseKey =
+				"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtaGZ3ZHVleXVkbWNjcGRuZG5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NTQwMzAsImV4cCI6MjA3MDAzMDAzMH0.eHxtimlpa68CK4eSHRuoSQ5_wcqZJEX0LanHQkcvZPQ";
+			const supabaseClient = window.supabase.createClient(
+				supabaseUrl,
+				supabaseKey
+			);
+		</script>
+
+		<script src="script.js"></script>
+	</body>
+</html>
