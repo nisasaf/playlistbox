@@ -3,21 +3,22 @@ const formContainer = document.getElementById("form-container");
 const input = document.getElementById("song-input");
 const list = document.getElementById("song-list");
 
-// Tampilkan form input saat klik tombol +
 addBtn.addEventListener("click", () => {
 	formContainer.classList.remove("hidden");
 	input.focus();
 });
 
-// Tambah lagu saat tekan Enter
 input.addEventListener("keydown", async (e) => {
 	if (e.key === "Enter") {
 		const title = input.value.trim();
 		if (!title) return;
 
+		const items = list.querySelectorAll("li");
+		const order = items.length;
+
 		const { data, error } = await supabaseClient
 			.from("songs")
-			.insert([{ title, is_checked: false }])
+			.insert([{ title, is_checked: false, order }])
 			.select();
 
 		if (error) {
@@ -31,12 +32,11 @@ input.addEventListener("keydown", async (e) => {
 	}
 });
 
-// Ambil semua lagu dari Supabase
 const fetchSongs = async () => {
 	const { data, error } = await supabaseClient
 		.from("songs")
 		.select("*")
-		.order("created_at", { ascending: true });
+		.order("order", { ascending: true });
 
 	if (error) {
 		console.error("Gagal ambil lagu:", error.message);
@@ -47,7 +47,6 @@ const fetchSongs = async () => {
 	data.forEach(renderSong);
 };
 
-// Hapus lagu berdasarkan ID
 const deleteSong = async (id, element) => {
 	const { error } = await supabaseClient.from("songs").delete().eq("id", id);
 	if (error) {
@@ -57,7 +56,6 @@ const deleteSong = async (id, element) => {
 	element.remove();
 };
 
-// Update judul lagu
 const updateSongTitle = async (id, newTitle, spanEl) => {
 	const { error } = await supabaseClient
 		.from("songs")
@@ -66,7 +64,6 @@ const updateSongTitle = async (id, newTitle, spanEl) => {
 	if (!error) spanEl.textContent = newTitle;
 };
 
-// Update checklist
 const toggleChecked = async (id, checked) => {
 	await supabaseClient
 		.from("songs")
@@ -74,7 +71,6 @@ const toggleChecked = async (id, checked) => {
 		.eq("id", id);
 };
 
-// --- Util: bikin span judul yang bisa diedit ---
 function createTitleSpan(title, song, wrapper) {
 	const span = document.createElement("span");
 	span.textContent = title;
@@ -85,9 +81,7 @@ function createTitleSpan(title, song, wrapper) {
 	return span;
 }
 
-// --- Util: aktifkan mode edit ---
 function triggerEditMode(song, titleWrapper, oldSpan) {
-	// Tutup semua input edit aktif
 	document.querySelectorAll(".song-edit-input").forEach((inputEl) => {
 		const originalTitle = inputEl.dataset.originalTitle;
 		const parent = inputEl.parentElement;
@@ -128,22 +122,25 @@ function triggerEditMode(song, titleWrapper, oldSpan) {
 	});
 }
 
-// Render 1 lagu
 const renderSong = (song, index = 0) => {
 	const li = document.createElement("li");
+	li.dataset.id = song.id;
 	li.className =
 		"bg-slate-800 p-2 rounded border border-slate-600 text-white flex items-center space-x-2 opacity-0";
 	li.style.animationDelay = `${index * 80}ms`;
 	li.classList.add("slide-in-left");
 
-	// --- Judul lagu (60%) ---
+	const dragIcon = document.createElement("span");
+	dragIcon.innerHTML = "&#9776;";
+	dragIcon.className = "drag-handle cursor-grab pr-2 text-slate-400";
+	li.prepend(dragIcon);
+
 	const titleWrapper = document.createElement("div");
 	titleWrapper.className =
 		"flex-[6] p-2 cursor-text hover:bg-slate-700 rounded";
 	const titleSpan = createTitleSpan(song.title, song, titleWrapper);
 	titleWrapper.appendChild(titleSpan);
 
-	// --- Checkbox (20%) ---
 	const checkWrapper = document.createElement("div");
 	checkWrapper.className = "flex-[1] flex justify-center";
 	const checkbox = document.createElement("input");
@@ -155,7 +152,6 @@ const renderSong = (song, index = 0) => {
 	});
 	checkWrapper.appendChild(checkbox);
 
-	// --- Tombol hapus (20%) ---
 	const deleteWrapper = document.createElement("div");
 	deleteWrapper.className = "flex-[1] flex justify-end";
 	const deleteBtn = document.createElement("button");
@@ -175,7 +171,6 @@ const renderSong = (song, index = 0) => {
 
 window.addEventListener("DOMContentLoaded", fetchSongs);
 
-// Tanggal otomatis
 const tanggalElemen = document.getElementById("tanggal");
 
 const formatTanggal = () => {
@@ -188,3 +183,23 @@ const formatTanggal = () => {
 };
 
 tanggalElemen.textContent = formatTanggal();
+
+new Sortable(list, {
+	animation: 150,
+	handle: ".drag-handle",
+	onEnd: async () => {
+		const items = list.querySelectorAll("li");
+		const updates = [];
+
+		items.forEach((item, index) => {
+			const id = item.dataset.id;
+			updates.push({ id, order: index });
+		});
+
+		const { error } = await supabaseClient.rpc("batch_update_order", {
+			updates: updates,
+		});
+
+		if (error) console.error("Update order gagal:", error.message);
+	},
+});
